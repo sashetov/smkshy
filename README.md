@@ -1,2 +1,5 @@
 # smkshy
-some misc k8s scripts - hell yeah!
+Some Misc k8s Scripts - Hell Yeah!
+
+# License:
+CPAL-1.0

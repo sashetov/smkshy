@@ -1,0 +1,41 @@
+#!/bin/bash
+echo "Usage: $0 [<environment>] [<api-resource>...]"
+E=$1
+AR=$2
+CONFIG_FILE="envs.conf.json"
+function get_resources() {
+    local e=$1
+    local r=$2
+    local ctx=$(jq -r ".$e" $CONFIG_FILE)
+    echo " Switching to context $ctx"
+    kubectl config use-context "$ctx"
+    if [ -z "$r" ]; then
+        echo " Getting all resources for env $e/"
+        mkdir -p "$e"
+        kubectl api-resources --verbs=list --namespaced -o name | while read o; do
+            echo "  Getting $e/$o.yaml"
+            kubectl get "$o" --all-namespaces -o yaml > "$e/$o.yaml"
+            echo "  Done getting $e/$o.yaml"
+        done
+    else
+        echo " Getting r $r for e $e/"
+        mkdir -p "$e"
+        echo "  Getting $e/$r.yaml"
+        kubectl get "$r" --all-namespaces -o yaml > "$e/$r.yaml"
+        echo "  Done getting $e/$r.yaml"
+    fi
+}
+if [ -z "$E" ] && [ -z "$AR" ]; then
+    for E in $(cat envs.conf.json| jq -r 'keys[]'); do
+        echo "get_resources $E:"
+        get_resources "$E"
+    done
+elif [ -n "$E" ] && [ -z "$AR" ] ; then
+    echo "get_resources $E:"
+    get_resources "$E"
+elif [ -n "$E" ] && [ -n "$AR" ] ; then
+    for AR in "${@:2}"; do
+        echo "get_resources $E $AR:"
+        get_resources "$E" "$AR"
+    done
+fi

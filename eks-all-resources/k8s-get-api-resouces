@@ -1,5 +1,7 @@
 #!/bin/bash
-echo "Usage: $0 [<environment>] [<api-resource>...]"
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 [<environment>] [<api-resource>...]"
+fi
 E=$1
 AR=$2
 CONFIG_FILE="envs.conf.json"
@@ -26,7 +28,8 @@ function get_resources() {
     fi
 }
 if [ -z "$E" ] && [ -z "$AR" ]; then
-    for E in $(cat envs.conf.json| jq -r 'keys[]'); do
+    echo "Starting all envs as per $CONFIG_FILE:"
+    for E in $(cat $CONFIG_FILE | jq -r 'keys[]'); do
         echo "get_resources $E:"
         get_resources "$E"
     done
